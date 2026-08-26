@@ -11,7 +11,7 @@ def load_model():
     """
     global MODEL, MODEL_LOADED
 
-    model_path = Path("app/model/cifake_model.h5")  # change name if needed
+    model_path = Path("app/model/imageDetectionModel.keras")  # change name if needed
 
     if not model_path.exists():
         print("⚠ Model file not found. Running in MOCK mode.")
