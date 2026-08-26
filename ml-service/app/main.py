@@ -1,9 +1,8 @@
 from fastapi import FastAPI, File, UploadFile, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-import uvicorn
-import random
-import time
+from app.model.load_model import load_model
+from app.model.predict import predict_image
 
 app = FastAPI(
     title="FakeVision ML Service",
@@ -11,14 +10,18 @@ app = FastAPI(
     version="1.0.0"
 )
 
-# Allow frontend & Express backend to call this service
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # later you can restrict this
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Load model at startup
+@app.on_event("startup")
+def startup_event():
+    load_model()
 
 @app.get("/")
 def root():
@@ -29,43 +32,23 @@ def root():
 
 @app.get("/health")
 def health():
+    from app.model.load_model import MODEL_LOADED
     return {
         "status": "OK",
-        "service": "ml-service"
+        "service": "ml-service",
+        "model_loaded": MODEL_LOADED
     }
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...)):
     try:
-        # Validate file type
         if not file.content_type.startswith("image/"):
             raise HTTPException(status_code=400, detail="File must be an image")
 
-        # Read file (we will process it later)
         contents = await file.read()
-
-        # ============================================
-        # TEMPORARY MOCK RESPONSE
-        # Later we will replace this with real model
-        # ============================================
-        time.sleep(1.5)  # simulate model inference time
-
-        is_fake = random.random() > 0.45
-        confidence = round(random.uniform(0.78, 0.98), 4)
-
-        result = {
-            "success": True,
-            "label": "Fake" if is_fake else "Real",
-            "confidence": confidence,
-            "heatmap": None,          # will send base64 heatmap later
-            "message": "Prediction successful (mock mode)"
-        }
+        result = predict_image(contents)
 
         return JSONResponse(content=result)
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-# Run the server
-if __name__ == "__main__":
-    uvicorn.run("app.main:app", host="0.0.0.0", port=8000, reload=True)
