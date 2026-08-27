@@ -99,12 +99,15 @@ xtragrad-major-project/
 ### 1. Clone the repository
 
 git clone https://github.com/your-username/xtragrad-major-project.git
+
 cd xtragrad-major-project
 
 
 
 2. Run ML Service
+   
 cd ml-service
+
 python -m venv venv
 
 # Windows
@@ -114,57 +117,86 @@ venv\Scripts\activate
 source venv/bin/activate
 
 pip install -r requirements.txt
+
 uvicorn app.main:app --reload --port 8000
+
 3. Run Backend
+   
 cd backend
+
 npm install
 
 PORT=5000
+
 NODE_ENV=development
+
 ML_SERVICE_URL=http://localhost:8000
+
 FRONTEND_URL=http://localhost:5173
+
 npm run dev
 
 4. Run Frontend
+   
 Bashcd frontend
+
 npm install
+
 Create .env file:
+
 envVITE_API_URL=http://localhost:5000
+
 npm run dev
+
 Open: http://localhost:5173
 
 ☁️ Deployment
 Frontend → Vercel
 
 Root Directory: frontend
+
 Build Command: npm run build
+
 Output Directory: dist
+
 Environment Variable:textVITE_API_URL=https://your-backend.onrender.com
 
 Backend → Render
 
 Root Directory: backend
 Runtime: Node
+
 Build Command: npm install
+
 Start Command: npm start
+
 Environment Variables:textNODE_ENV=production
+
 ML_SERVICE_URL=https://your-ml-service.onrender.com
+
 FRONTEND_URL=https://your-frontend.vercel.app
 
 ML Service → Render
 
 Root Directory: ml-service
+
 Runtime: Python 3
+
 Build Command: pip install -r requirements.txt
+
 Start Command: uvicorn app.main:app --host 0.0.0.0 --port $PORT
 
 
 🧠 Model Details
 
 Architecture: Modified CNN with Global Average Pooling + Dropout
+
 Input Size: 32×32×3
+
 Dataset: CIFAKE (Bird & Lotfi, 2024)
+
 Framework: TensorFlow / Keras
+
 Task: Binary Classification (Real = 1, Fake = 0)
 
 ⚠️ Limitations
@@ -187,9 +219,13 @@ Extend to source model attribution (multi-class)
 📚 References / Citations
 
 Bird, J. J., & Lotfi, A. (2024). CIFAKE: Image Classification and Explainable Identification of AI-Generated Synthetic Images. IEEE Access.
+
 Rombach, R., et al. (2022). High-Resolution Image Synthesis with Latent Diffusion Models. CVPR.
+
 Krizhevsky, A., & Hinton, G. (2009). Learning Multiple Layers of Features from Tiny Images.
+
 Selvaraju, R. R., et al. (2017). Grad-CAM: Visual Explanations from Deep Networks via Gradient-based Localization. ICCV.
+
 CIFAKE Dataset: https://www.kaggle.com/datasets/birdy654/cifake-real-and-ai-generated-synthetic-images
 
 
