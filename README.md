@@ -175,7 +175,9 @@ npm run dev
 
 Open: http://localhost:5173
 
-☁️ Deployment
+
+## ☁️ Deployment
+
 Frontend → Vercel
 
 Root Directory: frontend
