@@ -58,6 +58,7 @@ With the rapid advancement of generative AI (Latent Diffusion Models, Flux, SD3,
 ---
 
 ## 📁 Project Structure
+
 xtragrad-major-project/
 ├── frontend/                 # React + Tailwind (Vercel)
 │   ├── src/
@@ -210,10 +211,15 @@ Free-tier hosting (Render) causes cold starts.
 🔮 Future Work
 
 Fine-tune the model on modern AI-generated images
+
 Support higher resolution inputs (128×128 / 224×224)
+
 Integrate Grad-CAM for visual explanations
+
 Experiment with EfficientNet / Vision Transformers
+
 Add continuous learning pipeline
+
 Extend to source model attribution (multi-class)
 
 📚 References / Citations
