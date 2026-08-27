@@ -1,35 +1,16 @@
-import os
 from pathlib import Path
+import tensorflow as tf
 
-MODEL = None
-MODEL_LOADED = False
+MODEL_PATH = Path(__file__).resolve().parents[2] / "weights" / "cifake_model.keras"
 
-def load_model():
-    """
-    Try to load a trained model.
-    If model file is not found, keep MODEL = None (mock mode).
-    """
-    global MODEL, MODEL_LOADED
-
-    model_path = Path("app/model/cifake_model.h5")  # change name if needed
-
-    if not model_path.exists():
-        print("⚠ Model file not found. Running in MOCK mode.")
-        MODEL = None
-        MODEL_LOADED = False
-        return None
-
-    try:
-        import tensorflow as tf
-        MODEL = tf.keras.models.load_model(str(model_path))
-        MODEL_LOADED = True
-        print("✅ Model loaded successfully!")
-        return MODEL
-    except Exception as e:
-        print(f"❌ Failed to load model: {e}")
-        MODEL = None
-        MODEL_LOADED = False
-        return None
+_model = None
 
 def get_model():
-    return MODEL, MODEL_LOADED
+    global _model
+    if _model is None:
+        if not MODEL_PATH.exists():
+            raise FileNotFoundError(
+                f"Model not found at {MODEL_PATH}. Train the model first with ml-service/train.py."
+            )
+        _model = tf.keras.models.load_model(MODEL_PATH)
+    return _model

@@ -1,54 +1,41 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi import FastAPI, File, UploadFile, HTTPException, Form
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from app.model.load_model import load_model
-from app.model.predict import predict_image
 
-app = FastAPI(
-    title="FakeVision ML Service",
-    description="AI-Generated Image Detection API",
-    version="1.0.0"
-)
+from app.utils.preprocessing import load_image
+from app.model.predict import predict_array
+from app.gradcam.generate_heatmap import generate_gradcam
+
+app = FastAPI(title="CIFAKE ML Service", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Load model at startup
-@app.on_event("startup")
-def startup_event():
-    load_model()
-
-@app.get("/")
-def root():
-    return {
-        "message": "FakeVision ML Service is running",
-        "status": "active"
-    }
-
 @app.get("/health")
 def health():
-    from app.model.load_model import MODEL_LOADED
-    return {
-        "status": "OK",
-        "service": "ml-service",
-        "model_loaded": MODEL_LOADED
-    }
+    return {"status": "ok", "service": "ml-service"}
 
 @app.post("/predict")
-async def predict(file: UploadFile = File(...)):
+async def predict(file: UploadFile = File(...), explain: bool = Form(True)):
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=400, detail="Uploaded file must be an image.")
+
+    data = await file.read()
+    if len(data) > 10 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Image exceeds 10 MB.")
+
     try:
-        if not file.content_type.startswith("image/"):
-            raise HTTPException(status_code=400, detail="File must be an image")
+        original, batch = load_image(data)
+        result = predict_array(batch)
 
-        contents = await file.read()
-        result = predict_image(contents)
+        if explain:
+            result["gradcam"] = generate_gradcam(original, batch)
 
-        return JSONResponse(content=result)
-
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return result
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=503, detail=str(exc))
+    except Exception as exc:
+        raise HTTPException(status_code=400, detail=f"Could not process image: {exc}")
