@@ -1,1 +1,271 @@
-# xtragrad_Major_project
+# FakeVision – AI-Generated Image Detection System
+
+An end-to-end full-stack application that detects whether an image is **Real** or **AI-Generated** using a deep learning model (Modified CNN), with a modern web interface.
+
+**Live Demo:** [https://xtragrad-major-project.vercel.app](https://xtragrad-major-project.vercel.app)
+
+---
+
+## 📌 Project Overview
+
+With the rapid advancement of generative AI (Latent Diffusion Models, Flux, SD3, Midjourney, etc.), distinguishing real photographs from synthetic images has become extremely difficult. This project provides a practical solution using Computer Vision and Deep Learning.
+
+**Key Features:**
+- Binary classification (Real vs Fake)
+- Real-time image upload & prediction
+- Confidence score
+- Full-stack architecture
+- Deployed on free-tier cloud platforms
+
+**Model Performance (on CIFAKE dataset):**
+| Metric     | Value   |
+|------------|---------|
+| Accuracy   | 89.77%  |
+| Precision  | 83.43%  |
+| Recall     | 99.07%  |
+
+---
+
+## 🏗️ System Architecture
+
+```mermaid
+flowchart TB
+    User([👤 User])
+
+    subgraph Frontend["Frontend — Vercel"]
+        React["React + Tailwind CSS"]
+    end
+
+    subgraph Backend["Backend API — Render"]
+        Express["Express.js API"]
+    end
+
+    subgraph ML["ML Service — Render"]
+        FastAPI["FastAPI"]
+        TensorFlow["TensorFlow"]
+        CNN["CNN Model"]
+    end
+
+    User --> React
+    React -->|HTTP Request| Express
+    Express -->|ML Request| FastAPI
+    FastAPI --> TensorFlow
+    TensorFlow --> CNN
+    CNN -->|Prediction| FastAPI
+    FastAPI -->|Result| Express
+    Express -->|API Response| React
+    React --> User
+```
+
+
+### Flow:
+1. User uploads an image on the React frontend
+2. Frontend sends the image to Express backend (`/api/predict`)
+3. Express forwards the image to the FastAPI ML service
+4. ML service runs the CNN model and returns `label` + `confidence`
+5. Result is displayed on the frontend
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer          | Technology                          |
+|----------------|-------------------------------------|
+| Frontend       | React, Vite, Tailwind CSS, Axios    |
+| Backend        | Node.js, Express.js, Multer, CORS   |
+| ML Service     | Python, FastAPI, TensorFlow, Pillow |
+| Model          | Modified CNN (GAP + Dropout)        |
+| Dataset        | CIFAKE (60k Real + 60k Fake)        |
+| Deployment     | Vercel (Frontend), Render (Backend + ML) |
+
+---
+
+## 📁 Project Structure
+
+```text
+xtragrad-major-project/
+├── frontend/                 # React + Tailwind (Vercel)
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   └── App.jsx
+│   └── package.json
+│
+├── backend/                  # Express.js (Render)
+│   ├── src/
+│   │   ├── controllers/
+│   │   ├── routes/
+│   │   ├── middleware/
+│   │   ├── services/
+│   │   └── server.js
+│   └── package.json
+│
+└── ml-service/               # FastAPI + TensorFlow (Render)
+├── app/
+│   ├── model/
+│   │   ├── load_model.py
+│   │   ├── predict.py
+│   │   └── cifake_model.keras
+│   └── main.py
+└── requirements.txt
+
+```
+
+---
+
+## 🚀 How to Run Locally
+
+### Prerequisites
+- Node.js 18+
+- Python 3.10+
+- Git
+
+### 1. Clone the repository
+
+git clone https://github.com/your-username/xtragrad-major-project.git
+
+cd xtragrad-major-project
+
+
+
+## 2. Run ML Service
+   
+cd ml-service
+
+python -m venv venv
+
+# Windows
+venv\Scripts\activate
+
+# Mac/Linux
+source venv/bin/activate
+
+pip install -r requirements.txt
+
+uvicorn app.main:app --reload --port 8000
+
+## 3. Run Backend
+   
+cd backend
+
+npm install
+
+PORT=5000
+
+NODE_ENV=development
+
+ML_SERVICE_URL=http://localhost:8000
+
+FRONTEND_URL=http://localhost:5173
+
+npm run dev
+
+## 4. Run Frontend
+   
+Bashcd frontend
+
+npm install
+
+Create .env file:
+
+envVITE_API_URL=http://localhost:5000
+
+npm run dev
+
+Open: http://localhost:5173
+
+
+## ☁️ Deployment
+
+Frontend → Vercel
+
+Root Directory: frontend
+
+Build Command: npm run build
+
+Output Directory: dist
+
+Environment Variable:textVITE_API_URL=https://your-backend.onrender.com
+
+Backend → Render
+
+Root Directory: backend
+Runtime: Node
+
+Build Command: npm install
+
+Start Command: npm start
+
+Environment Variables:textNODE_ENV=production
+
+ML_SERVICE_URL=https://your-ml-service.onrender.com
+
+FRONTEND_URL=https://your-frontend.vercel.app
+
+ML Service → Render
+
+Root Directory: ml-service
+
+Runtime: Python 3
+
+Build Command: pip install -r requirements.txt
+
+Start Command: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+
+
+## 🧠 Model Details
+
+Architecture: Modified CNN with Global Average Pooling + Dropout
+
+Input Size: 32×32×3
+
+Dataset: CIFAKE (Bird & Lotfi, 2024)
+
+Framework: TensorFlow / Keras
+
+Task: Binary Classification (Real = 1, Fake = 0)
+
+## ⚠️ Limitations
+
+The model was trained on the CIFAKE dataset (older diffusion models at 32×32 resolution).
+Performance decreases on images generated by the latest models (Flux, SD3, Midjourney, etc.).
+Low resolution input limits detection of fine-grained artifacts in modern high-quality synthetic images.
+Free-tier hosting (Render) causes cold starts.
+
+
+## 🔮 Future Work
+
+Fine-tune the model on modern AI-generated images
+
+Support higher resolution inputs (128×128 / 224×224)
+
+Integrate Grad-CAM for visual explanations
+
+Experiment with EfficientNet / Vision Transformers
+
+Add continuous learning pipeline
+
+Extend to source model attribution (multi-class)
+
+## 📚 References / Citations
+
+Bird, J. J., & Lotfi, A. (2024). CIFAKE: Image Classification and Explainable Identification of AI-Generated Synthetic Images. IEEE Access.
+
+Rombach, R., et al. (2022). High-Resolution Image Synthesis with Latent Diffusion Models. CVPR.
+
+Krizhevsky, A., & Hinton, G. (2009). Learning Multiple Layers of Features from Tiny Images.
+
+Selvaraju, R. R., et al. (2017). Grad-CAM: Visual Explanations from Deep Networks via Gradient-based Localization. ICCV.
+
+CIFAKE Dataset: https://www.kaggle.com/datasets/birdy654/cifake-real-and-ai-generated-synthetic-images
+
+
+##👨‍💻 Author
+Internship / Major Project
+
+Developed as part of academic internship program.
+
+## 📄 License
+This project is developed for educational and research purposes.
+
