@@ -1,7 +1,13 @@
 import { useState, useRef } from 'react'
-import { Upload, Image as ImageIcon, X, Loader2, CheckCircle2, AlertTriangle } from 'lucide-react'
+import { 
+  Upload, 
+  Image as ImageIcon, 
+  X, 
+  Loader2, 
+  CheckCircle2, 
+  AlertTriangle
+} from 'lucide-react'
 import toast from 'react-hot-toast'
-import axios from 'axios'
 import { predictImage } from '../services/api'
 
 const Predict = () => {
@@ -11,19 +17,14 @@ const Predict = () => {
   const [result, setResult] = useState(null)
   const fileInputRef = useRef(null)
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000'
-
-  // Handle file selection
   const handleFileChange = (e) => {
     const file = e.target.files[0]
     if (!file) return
 
-    // Validation
     if (!file.type.startsWith('image/')) {
       toast.error('Please upload a valid image file')
       return
     }
-
     if (file.size > 5 * 1024 * 1024) {
       toast.error('Image size should be less than 5MB')
       return
@@ -32,69 +33,63 @@ const Predict = () => {
     setSelectedFile(file)
     setResult(null)
 
-    // Create preview
     const reader = new FileReader()
-    reader.onloadend = () => {
-      setPreview(reader.result)
-    }
+    reader.onloadend = () => setPreview(reader.result)
     reader.readAsDataURL(file)
   }
 
-  // Remove selected image
   const handleRemove = () => {
     setSelectedFile(null)
     setPreview(null)
     setResult(null)
-    if (fileInputRef.current) {
-      fileInputRef.current.value = ''
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const handlePredict = async () => {
+    if (!selectedFile) {
+      toast.error('Please select an image first')
+      return
+    }
+
+    setIsLoading(true)
+    setResult(null)
+
+    try {
+      const data = await predictImage(selectedFile)
+      setResult(data)
+      toast.success('Prediction completed!')
+    } catch (error) {
+      const message = error.response?.data?.message || 'Failed to get prediction.'
+      toast.error(message)
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  // Submit image for prediction
-  const handlePredict = async () => {
-  if (!selectedFile) {
-    toast.error('Please select an image first')
-    return
-  }
-
-  setIsLoading(true)
-  setResult(null)
-
-  try {
-    const data = await predictImage(selectedFile)
-    setResult(data)
-    toast.success('Prediction completed!')
-  } catch (error) {
-    console.error(error)
-    const message =
-      error.response?.data?.message ||
-      'Failed to get prediction. Please try again.'
-    toast.error(message)
-  } finally {
-    setIsLoading(false)
-  }
-}
-
   return (
-    <div className="max-w-4xl mx-auto space-y-10 py-6">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
+      
       {/* Header */}
-      <div className="text-center">
-        <h1 className="text-3xl md:text-4xl font-bold mb-3">Detect AI-Generated Image</h1>
-        <p className="text-slate-400">
-          Upload an image to check whether it is Real or AI-Generated
+      <div className="mb-10 max-w-2xl">
+        <h1 className="text-3xl font-bold text-zinc-100 tracking-tight mb-2">
+          Detect Image
+        </h1>
+        <p className="text-zinc-400">
+          Upload an image to classify it as Real or AI-Generated
         </p>
       </div>
 
-      {/* Upload Area */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Left - Upload */}
-        <div className="space-y-5">
+      {/* Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        {/* Upload */}
+        <div className="lg:col-span-7 space-y-4">
           <div
-            onClick={() => fileInputRef.current?.click()}
-            className={`relative border-2 border-dashed rounded-2xl p-8 text-center cursor-pointer transition-all duration-300
-              ${preview
-                ? 'border-cyan-500/50 bg-slate-900/40'
-                : 'border-slate-700 hover:border-cyan-500/50 hover:bg-slate-900/40'
+            onClick={() => !preview && fileInputRef.current?.click()}
+            className={`relative rounded-2xl border border-dashed transition-all overflow-hidden min-h-[320px] flex items-center justify-center
+              ${preview 
+                ? 'border-zinc-600 bg-zinc-900/50' 
+                : 'border-zinc-700 hover:border-zinc-500 hover:bg-zinc-900/30 cursor-pointer'
               }`}
           >
             <input
@@ -106,29 +101,29 @@ const Predict = () => {
             />
 
             {preview ? (
-              <div className="relative">
+              <div className="relative w-full p-5">
                 <img
                   src={preview}
                   alt="Preview"
-                  className="max-h-72 mx-auto rounded-xl object-contain"
+                  className="max-h-[360px] w-full object-contain rounded-xl"
                 />
                 <button
                   onClick={(e) => {
                     e.stopPropagation()
                     handleRemove()
                   }}
-                  className="absolute -top-3 -right-3 p-1.5 rounded-full bg-red-500 hover:bg-red-600 text-white transition-colors"
+                  className="absolute top-7 right-7 p-2 rounded-full bg-zinc-100 hover:bg-white text-zinc-900 transition-colors"
                 >
                   <X className="w-4 h-4" />
                 </button>
               </div>
             ) : (
-              <div className="py-10">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-slate-800 flex items-center justify-center">
-                  <Upload className="w-7 h-7 text-cyan-400" />
+              <div className="text-center px-6 py-12">
+                <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-zinc-900 flex items-center justify-center border border-zinc-700">
+                  <Upload className="w-6 h-6 text-zinc-300" />
                 </div>
-                <p className="text-lg font-medium mb-1">Click to upload image</p>
-                <p className="text-sm text-slate-500">PNG, JPG, JPEG up to 5MB</p>
+                <p className="text-zinc-100 font-medium mb-1">Click to upload image</p>
+                <p className="text-sm text-zinc-500">PNG, JPG, WEBP up to 5MB</p>
               </div>
             )}
           </div>
@@ -138,8 +133,8 @@ const Predict = () => {
             disabled={!selectedFile || isLoading}
             className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold transition-all
               ${!selectedFile || isLoading
-                ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
-                : 'bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white shadow-lg shadow-cyan-500/20'
+                ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                : 'bg-zinc-100 hover:bg-white text-zinc-950'
               }`}
           >
             {isLoading ? (
@@ -156,84 +151,77 @@ const Predict = () => {
           </button>
         </div>
 
-        {/* Right - Result */}
-        <div className="min-h-[320px] rounded-2xl bg-slate-900/60 border border-slate-800 p-6 flex flex-col">
-          <h2 className="text-lg font-semibold mb-4 text-slate-300">Prediction Result</h2>
+        {/* Result */}
+        <div className="lg:col-span-5">
+          <div className="sticky top-24 rounded-2xl bg-zinc-900/50 border border-zinc-800 p-6 min-h-[320px] flex flex-col">
+            <h2 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-5">
+              Result
+            </h2>
 
-          {!result && !isLoading && (
-            <div className="flex-1 flex flex-col items-center justify-center text-slate-500">
-              <ImageIcon className="w-12 h-12 mb-3 opacity-40" />
-              <p>Upload an image and click Detect</p>
-            </div>
-          )}
+            {!result && !isLoading && (
+              <div className="flex-1 flex flex-col justify-center">
+                <p className="text-zinc-500 text-sm leading-relaxed">
+                  Your prediction result will appear here after you upload an image and run detection.
+                </p>
+              </div>
+            )}
 
-          {isLoading && (
-            <div className="flex-1 flex flex-col items-center justify-center">
-              <Loader2 className="w-10 h-10 text-cyan-400 animate-spin mb-4" />
-              <p className="text-slate-400">Running model inference...</p>
-            </div>
-          )}
+            {isLoading && (
+              <div className="flex-1 flex flex-col items-center justify-center gap-3">
+                <Loader2 className="w-8 h-8 text-zinc-300 animate-spin" />
+                <p className="text-zinc-400 text-sm">Running inference...</p>
+              </div>
+            )}
 
-          {result && (
-            <div className="space-y-5">
-              {/* Label */}
-              <div className={`flex items-center gap-3 p-4 rounded-xl border
-                ${result.label?.toLowerCase() === 'real'
-                  ? 'bg-green-500/10 border-green-500/30'
-                  : 'bg-red-500/10 border-red-500/30'
-                }`}
-              >
-                {result.label?.toLowerCase() === 'real' ? (
-                  <CheckCircle2 className="w-8 h-8 text-green-400" />
-                ) : (
-                  <AlertTriangle className="w-8 h-8 text-red-400" />
+            {result && (
+              <div className="space-y-6">
+                <div className={`p-4 rounded-xl border ${
+                  result.label?.toLowerCase() === 'real'
+                    ? 'bg-emerald-500/10 border-emerald-500/30'
+                    : 'bg-red-500/10 border-red-500/30'
+                }`}>
+                  <div className="flex items-center gap-3">
+                    {result.label?.toLowerCase() === 'real' ? (
+                      <CheckCircle2 className="w-6 h-6 text-emerald-400" />
+                    ) : (
+                      <AlertTriangle className="w-6 h-6 text-red-400" />
+                    )}
+                    <div>
+                      <p className="text-xs text-zinc-400">Prediction</p>
+                      <p className={`text-xl font-bold ${
+                        result.label?.toLowerCase() === 'real' ? 'text-emerald-400' : 'text-red-400'
+                      }`}>
+                        {result.label}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span className="text-zinc-400">Confidence</span>
+                    <span className="text-zinc-100 font-medium">
+                      {(result.confidence * 100).toFixed(1)}%
+                    </span>
+                  </div>
+                  <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-700 ${
+                        result.label?.toLowerCase() === 'real' ? 'bg-emerald-500' : 'bg-red-500'
+                      }`}
+                      style={{ width: `${result.confidence * 100}%` }}
+                    />
+                  </div>
+                </div>
+
+                {result.message && (
+                  <p className="text-xs text-zinc-500 leading-relaxed border-t border-zinc-800 pt-4">
+                    {result.message}
+                  </p>
                 )}
-                <div>
-                  <p className="text-sm text-slate-400">Prediction</p>
-                  <p className={`text-2xl font-bold ${
-                    result.label?.toLowerCase() === 'real' ? 'text-green-400' : 'text-red-400'
-                  }`}>
-                    {result.label}
-                  </p>
-                </div>
               </div>
-
-              {/* Confidence */}
-              <div>
-                <div className="flex justify-between text-sm mb-1.5">
-                  <span className="text-slate-400">Confidence</span>
-                  <span className="font-medium">
-                    {(result.confidence * 100).toFixed(1)}%
-                  </span>
-                </div>
-                <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
-                  <div
-                    className={`h-full rounded-full transition-all duration-700 ${
-                      result.label?.toLowerCase() === 'real'
-                        ? 'bg-green-500'
-                        : 'bg-red-500'
-                    }`}
-                    style={{ width: `${result.confidence * 100}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* Grad-CAM (if available) */}
-              {result.heatmap && (
-                <div>
-                  <p className="text-sm text-slate-400 mb-2">Grad-CAM Explanation</p>
-                  <img
-                    src={result.heatmap}
-                    alt="Grad-CAM Heatmap"
-                    className="w-full rounded-xl border border-slate-700"
-                  />
-                  <p className="text-xs text-slate-500 mt-2">
-                    Highlighted regions show what the model focused on.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>
