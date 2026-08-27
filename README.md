@@ -82,6 +82,7 @@ flowchart TB
 
 ## 📁 Project Structure
 
+```text
 xtragrad-major-project/
 ├── frontend/                 # React + Tailwind (Vercel)
 │   ├── src/
@@ -109,7 +110,7 @@ xtragrad-major-project/
 │   └── main.py
 └── requirements.txt
 
-
+```
 
 ---
 
