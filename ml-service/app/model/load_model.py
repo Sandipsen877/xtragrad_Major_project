@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 MODEL = None
@@ -11,7 +10,7 @@ def load_model():
     """
     global MODEL, MODEL_LOADED
 
-    model_path = Path("app/model/imageDetectionModel.keras")  # change name if needed
+    model_path = Path("app/model/cifake_model.h5")  # change name if needed
 
     if not model_path.exists():
         print("⚠ Model file not found. Running in MOCK mode.")
@@ -32,4 +31,11 @@ def load_model():
         return None
 
 def get_model():
-    return MODEL, MODEL_LOADED
+    global _model
+    if _model is None:
+        if not MODEL_PATH.exists():
+            raise FileNotFoundError(
+                f"Model not found at {MODEL_PATH}. Train the model first with ml-service/train.py."
+            )
+        _model = tf.keras.models.load_model(MODEL_PATH)
+    return _model
