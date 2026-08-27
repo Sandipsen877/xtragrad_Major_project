@@ -97,9 +97,11 @@ xtragrad-major-project/
 - Git
 
 ### 1. Clone the repository
-```bash
+
 git clone https://github.com/your-username/xtragrad-major-project.git
 cd xtragrad-major-project
+
+
 
 2. Run ML Service
 cd ml-service
