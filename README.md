@@ -27,12 +27,35 @@ With the rapid advancement of generative AI (Latent Diffusion Models, Flux, SD3,
 ---
 
 ## 🏗️ System Architecture
-┌─────────────────┐      ┌──────────────────────┐      ┌─────────────────────────┐
-│   Frontend      │      │   Backend (API)      │      │   ML Service            │
-│   React +       │─────▶│   Express.js         │─────▶│   FastAPI + TensorFlow  │
-│   Tailwind CSS  │      │   (Node.js)          │      │   (CNN Model)           │
-│   (Vercel)      │      │   (Render)           │      │   (Render)              │
-└─────────────────┘      └──────────────────────┘      └─────────────────────────┘
+
+```mermaid
+flowchart TB
+    User([👤 User])
+
+    subgraph Frontend["Frontend — Vercel"]
+        React["React + Tailwind CSS"]
+    end
+
+    subgraph Backend["Backend API — Render"]
+        Express["Express.js API"]
+    end
+
+    subgraph ML["ML Service — Render"]
+        FastAPI["FastAPI"]
+        TensorFlow["TensorFlow"]
+        CNN["CNN Model"]
+    end
+
+    User --> React
+    React -->|HTTP Request| Express
+    Express -->|ML Request| FastAPI
+    FastAPI --> TensorFlow
+    TensorFlow --> CNN
+    CNN -->|Prediction| FastAPI
+    FastAPI -->|Result| Express
+    Express -->|API Response| React
+    React --> User
+```
 
 
 ### Flow:
