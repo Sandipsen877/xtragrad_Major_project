@@ -16,7 +16,7 @@ app.add_middleware(
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "service": "ml-service"}
+    return {"status": "ok", "service": "ml-service", "model_loaded": MODEL_LOADED}
 
 @app.post("/predict")
 async def predict(file: UploadFile = File(...), explain: bool = Form(True)):
