@@ -335,7 +335,7 @@ const About = () => {
                 <div className="flex items-end gap-2">
 
                   <span className="font-ai text-5xl sm:text-6xl tracking-tight text-zinc-100">
-                    89.77
+                    95.50
                   </span>
 
                   <span className="font-ai text-lg text-zinc-500 mb-2">
@@ -359,7 +359,7 @@ const About = () => {
                   </span>
 
                   <span className="font-ai text-[9px] text-zinc-400">
-                    89.77%
+                    95.50%
                   </span>
 
                 </div>
@@ -393,7 +393,7 @@ const About = () => {
                 </p>
 
                 <p className="font-ai text-2xl sm:text-3xl text-zinc-100 mt-2">
-                  83.43%
+                  95.98%
                 </p>
 
               </div>
@@ -437,7 +437,7 @@ const About = () => {
                 </p>
 
                 <p className="font-ai text-2xl sm:text-3xl text-zinc-100 mt-2">
-                  99.07%
+                  94.98%
                 </p>
 
               </div>

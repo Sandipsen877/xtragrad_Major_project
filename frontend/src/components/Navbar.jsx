@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
-import { Upload, Sparkles, ScanEye } from 'lucide-react'
+import { Upload, Sparkles, ScanEye, RocketIcon } from 'lucide-react'
 
 const Navbar = () => {
   const location = useLocation()
@@ -46,7 +46,7 @@ const Navbar = () => {
                   : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-900'
               }`}
             >
-              <Upload className="w-3.5 h-3.5" />
+              <RocketIcon className="w-3.5 h-3.5" />
               Detect
             </Link>
 
@@ -67,7 +67,7 @@ const Navbar = () => {
             to="/predict"
             className="sm:hidden inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-zinc-900 text-zinc-200 text-sm font-medium border border-zinc-700"
           >
-            <Sparkles className="w-3.5 h-3.5" />
+            <RocketIcon className="w-3.5 h-3.5" />
             Detect
           </Link>
         </div>
