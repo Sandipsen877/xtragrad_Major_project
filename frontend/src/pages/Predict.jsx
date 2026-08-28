@@ -1,32 +1,43 @@
-import { useState, useRef } from 'react'
-import { 
-  Upload, 
-  Image as ImageIcon, 
-  X, 
-  Loader2, 
-  CheckCircle2, 
-  AlertTriangle
-} from 'lucide-react'
-import toast from 'react-hot-toast'
-import { predictImage } from '../services/api'
+
+import { useState, useRef } from "react"
+import {
+  Upload,
+  Image as ImageIcon,
+  X,
+  Loader2,
+  CheckCircle2,
+  AlertTriangle,
+  ScanLine,
+  ShieldCheck,
+  Activity,
+  Sparkles,
+  FileImage,
+  ArrowUpRight,
+  RocketIcon,
+} from "lucide-react"
+import toast from "react-hot-toast"
+import { predictImage } from "../services/api"
 
 const Predict = () => {
   const [selectedFile, setSelectedFile] = useState(null)
   const [preview, setPreview] = useState(null)
   const [isLoading, setIsLoading] = useState(false)
   const [result, setResult] = useState(null)
+
   const fileInputRef = useRef(null)
 
   const handleFileChange = (e) => {
     const file = e.target.files[0]
+
     if (!file) return
 
-    if (!file.type.startsWith('image/')) {
-      toast.error('Please upload a valid image file')
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload a valid image file")
       return
     }
+
     if (file.size > 5 * 1024 * 1024) {
-      toast.error('Image size should be less than 5MB')
+      toast.error("Image size should be less than 5MB")
       return
     }
 
@@ -34,7 +45,11 @@ const Predict = () => {
     setResult(null)
 
     const reader = new FileReader()
-    reader.onloadend = () => setPreview(reader.result)
+
+    reader.onloadend = () => {
+      setPreview(reader.result)
+    }
+
     reader.readAsDataURL(file)
   }
 
@@ -42,12 +57,15 @@ const Predict = () => {
     setSelectedFile(null)
     setPreview(null)
     setResult(null)
-    if (fileInputRef.current) fileInputRef.current.value = ''
+
+    if (fileInputRef.current) {
+      fileInputRef.current.value = ""
+    }
   }
 
   const handlePredict = async () => {
     if (!selectedFile) {
-      toast.error('Please select an image first')
+      toast.error("Please select an image first")
       return
     }
 
@@ -56,174 +74,651 @@ const Predict = () => {
 
     try {
       const data = await predictImage(selectedFile)
+
       setResult(data)
-      toast.success('Prediction completed!')
+
+      toast.success("Prediction completed!")
     } catch (error) {
-      const message = error.response?.data?.message || 'Failed to get prediction.'
+      const message =
+        error.response?.data?.message ||
+        "Failed to get prediction."
+
       toast.error(message)
     } finally {
       setIsLoading(false)
     }
   }
 
+  const isReal =
+    result?.label?.toLowerCase() === "real"
+
+  const confidence =
+    result?.confidence
+      ? (result.confidence ).toFixed(1)
+      : null
+
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-12">
-      
-      {/* Header */}
-      <div className="mb-10 max-w-2xl">
-        <h1 className="text-3xl font-bold text-zinc-100 tracking-tight mb-2">
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 sm:py-14">
+
+      {/* =====================================================
+          HEADER
+      ===================================================== */}
+
+      <section className="mb-10 sm:mb-12">
+
+        <div className="flex items-center gap-2 mb-4">
+
+          <div className="w-7 h-7 rounded-lg border border-zinc-800 bg-zinc-900 flex items-center justify-center">
+            <ScanLine className="w-3.5 h-3.5 text-zinc-400" />
+          </div>
+
+          <span className="font-ai text-[8px] sm:text-[9px] tracking-[0.22em] text-zinc-500">
+            Z-V / IMAGE ANALYSIS
+          </span>
+
+        </div>
+
+        <h1 className="font-ai text-3xl sm:text-4xl text-zinc-100 tracking-tight">
           Detect Image
         </h1>
-        <p className="text-zinc-400">
-          Upload an image to classify it as Real or AI-Generated
+
+        <p className="text-sm sm:text-base text-zinc-500 mt-3 max-w-xl leading-relaxed">
+          Upload an image and let Z-Vision analyze its visual patterns
+          to determine whether it is real or AI-generated.
         </p>
-      </div>
 
-      {/* Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        {/* Upload */}
-        <div className="lg:col-span-7 space-y-4">
-          <div
-            onClick={() => !preview && fileInputRef.current?.click()}
-            className={`relative rounded-2xl border border-dashed transition-all overflow-hidden min-h-[320px] flex items-center justify-center
-              ${preview 
-                ? 'border-zinc-600 bg-zinc-900/50' 
-                : 'border-zinc-700 hover:border-zinc-500 hover:bg-zinc-900/30 cursor-pointer'
-              }`}
-          >
-            <input
-              type="file"
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              accept="image/*"
-              className="hidden"
-            />
+      </section>
 
-            {preview ? (
-              <div className="relative w-full p-5">
-                <img
-                  src={preview}
-                  alt="Preview"
-                  className="max-h-[360px] w-full object-contain rounded-xl"
-                />
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    handleRemove()
-                  }}
-                  className="absolute top-7 right-7 p-2 rounded-full bg-zinc-100 hover:bg-white text-zinc-900 transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
+
+      {/*
+          MAIN ANALYSIS AREA
+       */}
+
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+
+        {/* 
+            LEFT — IMAGE ANALYZER
+         */}
+
+        <div className="lg:col-span-7">
+
+          <div className="rounded-3xl border border-zinc-800 bg-zinc-900/20 overflow-hidden">
+
+            {/* Panel header */}
+
+            <div className="px-5 sm:px-6 py-4 border-b border-zinc-800 flex items-center justify-between">
+
+              <div className="flex items-center gap-2">
+
+                <Activity className="w-4 h-4 text-zinc-500" />
+
+                <span className="font-ai text-[9px] tracking-[0.18em] text-zinc-400">
+                  VISION INPUT
+                </span>
+
               </div>
-            ) : (
-              <div className="text-center px-6 py-12">
-                <div className="w-14 h-14 mx-auto mb-4 rounded-xl bg-zinc-900 flex items-center justify-center border border-zinc-700">
-                  <Upload className="w-6 h-6 text-zinc-300" />
+
+              <span className="font-ai text-[8px] tracking-widest text-zinc-600">
+                MAX 5MB
+              </span>
+
+            </div>
+
+
+            {/* Upload viewport */}
+
+            <div
+              onClick={() =>
+                !preview &&
+                fileInputRef.current?.click()
+              }
+              className={`relative min-h-[350px] sm:min-h-[420px] flex items-center justify-center overflow-hidden
+                ${
+                  preview
+                    ? "bg-zinc-950"
+                    : "bg-zinc-950/40 cursor-pointer hover:bg-zinc-950/70"
+                }
+                transition-colors duration-300`}
+            >
+
+              {/* Technical grid */}
+
+              <div
+                className="absolute inset-0 opacity-[0.045] pointer-events-none"
+                style={{
+                  backgroundImage:
+                    "linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)",
+                  backgroundSize: "30px 30px",
+                }}
+              />
+
+
+              {/* Corner brackets */}
+
+              {preview && (
+                <>
+                  <div className="absolute top-5 left-5 w-8 h-8 border-l border-t border-zinc-600 z-10" />
+
+                  <div className="absolute top-5 right-5 w-8 h-8 border-r border-t border-zinc-600 z-10" />
+
+                  <div className="absolute bottom-5 left-5 w-8 h-8 border-l border-b border-zinc-600 z-10" />
+
+                  <div className="absolute bottom-5 right-5 w-8 h-8 border-r border-b border-zinc-600 z-10" />
+                </>
+              )}
+
+
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileChange}
+                accept="image/*"
+                className="hidden"
+              />
+
+
+              {/* 
+                  EMPTY STATE
+               */}
+
+              {!preview && (
+
+                <div className="relative text-center px-6">
+
+                  <div className="relative w-20 h-20 mx-auto mb-6">
+
+                    <div className="absolute inset-0 rounded-2xl border border-zinc-700 rotate-6" />
+
+                    <div className="relative w-full h-full rounded-2xl bg-zinc-900 border border-zinc-700 flex items-center justify-center">
+
+                      <Upload className="w-7 h-7 text-zinc-300" />
+
+                    </div>
+
+                  </div>
+
+
+                  <p className="font-ai text-xs sm:text-sm tracking-wide text-zinc-200">
+                    DROP IMAGE TO ANALYZE
+                  </p>
+
+                  <p className="text-xs text-zinc-600 mt-3">
+                    PNG · JPG · WEBP
+                  </p>
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      fileInputRef.current?.click()
+                    }}
+                    className="mt-6 px-5 py-2.5 rounded-xl border border-zinc-700 bg-zinc-900 hover:bg-zinc-800 text-xs font-medium text-zinc-300 transition-colors"
+                  >
+                    Select Image
+                  </button>
+
                 </div>
-                <p className="text-zinc-100 font-medium mb-1">Click to upload image</p>
-                <p className="text-sm text-zinc-500">PNG, JPG, WEBP up to 5MB</p>
-              </div>
-            )}
+
+              )}
+
+
+              {/* 
+                  IMAGE PREVIEW
+               */}
+
+              {preview && (
+
+                <div className="relative w-full h-full p-7 sm:p-10 flex items-center justify-center">
+
+                  <img
+                    src={preview}
+                    alt="Selected image preview"
+                    className="relative max-h-[330px] sm:max-h-[370px] max-w-full object-contain rounded-xl shadow-2xl"
+                  />
+
+
+                  {/* Image metadata */}
+
+                  <div className="absolute bottom-7 left-7 sm:left-10 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-950/80 border border-zinc-800 backdrop-blur">
+
+                    <FileImage className="w-3 h-3 text-zinc-500" />
+
+                    <span className="max-w-[150px] truncate text-[10px] text-zinc-500">
+                      {selectedFile?.name}
+                    </span>
+
+                  </div>
+
+
+                  {/* Remove */}
+
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleRemove()
+                    }}
+                    className="absolute top-7 right-7 sm:top-10 sm:right-10 w-9 h-9 rounded-xl bg-zinc-100 hover:bg-white text-zinc-950 flex items-center justify-center transition-colors shadow-lg"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+
+                </div>
+
+              )}
+
+            </div>
+
+
+            {/* Detect button */}
+
+            <div className="p-4 sm:p-5 border-t border-zinc-800">
+
+              <button
+                onClick={handlePredict}
+                disabled={!selectedFile || isLoading}
+                className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-medium transition-all duration-300
+                  ${
+                    !selectedFile || isLoading
+                      ? "bg-zinc-800 text-zinc-600 cursor-not-allowed"
+                      : "bg-zinc-100 hover:bg-white text-zinc-950 hover:shadow-lg"
+                  }`}
+              >
+
+                {isLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+
+                    <span className="font-ai text-[9px] tracking-widest">
+                      ANALYZING
+                    </span>
+                  </>
+                ) : (
+                  <>
+                    <RocketIcon className="w-4 h-4" />
+
+                    <span className="font-ai text-[9px] tracking-widest">
+                      DETECT NOW
+                    </span>
+                  </>
+                )}
+
+              </button>
+
+            </div>
+
           </div>
 
-          <button
-            onClick={handlePredict}
-            disabled={!selectedFile || isLoading}
-            className={`w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-semibold transition-all
-              ${!selectedFile || isLoading
-                ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
-                : 'bg-zinc-100 hover:bg-white text-zinc-950'
-              }`}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="w-5 h-5 animate-spin" />
-                Analyzing...
-              </>
-            ) : (
-              <>
-                <ImageIcon className="w-5 h-5" />
-                Detect Now
-              </>
-            )}
-          </button>
+
+          {/* Supported formats */}
+
+          <div className="flex items-center justify-between mt-4 px-1">
+
+            <span className="text-[10px] text-zinc-600">
+              Supported formats: PNG, JPG, WEBP
+            </span>
+
+            <span className="font-ai text-[8px] tracking-widest text-zinc-700">
+              Z-VISION ENGINE
+            </span>
+
+          </div>
+
         </div>
 
-        {/* Result */}
+
+        {/* 
+            RIGHT — RESULT CONSOLE
+        */}
+
         <div className="lg:col-span-5">
-          <div className="sticky top-24 rounded-2xl bg-zinc-900/50 border border-zinc-800 p-6 min-h-[320px] flex flex-col">
-            <h2 className="text-xs font-medium text-zinc-500 uppercase tracking-wider mb-5">
-              Result
-            </h2>
 
-            {!result && !isLoading && (
-              <div className="flex-1 flex flex-col justify-center">
-                <p className="text-zinc-500 text-sm leading-relaxed">
-                  Your prediction result will appear here after you upload an image and run detection.
-                </p>
+          <div className="lg:sticky lg:top-24 rounded-3xl border border-zinc-800 bg-zinc-900/30 overflow-hidden">
+
+
+            {/* Result header */}
+
+            <div className="px-5 sm:px-6 py-4 border-b border-zinc-800 flex items-center justify-between">
+
+              <div className="flex items-center gap-2">
+
+                <ShieldCheck className="w-4 h-4 text-zinc-500" />
+
+                <span className="font-ai text-[9px] tracking-[0.18em] text-zinc-400">
+                  DETECTION RESULT
+                </span>
+
               </div>
-            )}
 
-            {isLoading && (
-              <div className="flex-1 flex flex-col items-center justify-center gap-3">
-                <Loader2 className="w-8 h-8 text-zinc-300 animate-spin" />
-                <p className="text-zinc-400 text-sm">Running inference...</p>
+              <div className="flex items-center gap-2">
+
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${
+                    isLoading
+                      ? "bg-zinc-400 animate-pulse"
+                      : result
+                        ? isReal
+                          ? "bg-emerald-400"
+                          : "bg-red-400"
+                        : "bg-zinc-700"
+                  }`}
+                />
+
+                <span className="font-ai text-[7px] tracking-widest text-zinc-600">
+                  {isLoading
+                    ? "PROCESSING"
+                    : result
+                      ? "COMPLETE"
+                      : "STANDBY"}
+                </span>
+
               </div>
-            )}
 
-            {result && (
-              <div className="space-y-6">
-                <div className={`p-4 rounded-xl border ${
-                  result.label?.toLowerCase() === 'real'
-                    ? 'bg-emerald-500/10 border-emerald-500/30'
-                    : 'bg-red-500/10 border-red-500/30'
-                }`}>
-                  <div className="flex items-center gap-3">
-                    {result.label?.toLowerCase() === 'real' ? (
-                      <CheckCircle2 className="w-6 h-6 text-emerald-400" />
-                    ) : (
-                      <AlertTriangle className="w-6 h-6 text-red-400" />
-                    )}
-                    <div>
-                      <p className="text-xs text-zinc-400">Prediction</p>
-                      <p className={`text-xl font-bold ${
-                        result.label?.toLowerCase() === 'real' ? 'text-emerald-400' : 'text-red-400'
-                      }`}>
+            </div>
+
+
+            {/* Result body */}
+
+            <div className="min-h-[390px] p-6 sm:p-7">
+
+
+              {/* 
+                  EMPTY
+               */}
+
+              {!result && !isLoading && (
+
+                <div className="h-full min-h-[340px] flex flex-col items-center justify-center text-center">
+
+                  <div className="w-16 h-16 rounded-2xl border border-zinc-800 bg-zinc-950 flex items-center justify-center mb-5">
+
+                    <ScanLine className="w-6 h-6 text-zinc-700" />
+
+                  </div>
+
+                  <p className="font-ai text-[10px] tracking-[0.16em] text-zinc-500">
+                    AWAITING INPUT
+                  </p>
+
+                  <p className="text-xs text-zinc-600 max-w-xs leading-relaxed mt-3">
+                    Upload an image and run detection to receive
+                    the model's prediction.
+                  </p>
+
+                </div>
+
+              )}
+
+
+              {/* 
+                  LOADING
+               */}
+
+              {isLoading && (
+
+                <div className="h-full min-h-[340px] flex flex-col items-center justify-center">
+
+                  <div className="relative w-20 h-20 mb-6">
+
+                    <div className="absolute inset-0 rounded-full border border-zinc-800" />
+
+                    <div className="absolute inset-2 rounded-full border border-zinc-700 border-t-zinc-200 animate-spin" />
+
+                    <div className="absolute inset-0 flex items-center justify-center">
+
+                      <ScanLine className="w-6 h-6 text-zinc-300" />
+
+                    </div>
+
+                  </div>
+
+                  <p className="font-ai text-[10px] tracking-[0.18em] text-zinc-300">
+                    RUNNING INFERENCE
+                  </p>
+
+                  <p className="text-xs text-zinc-600 mt-3">
+                    Analyzing visual patterns...
+                  </p>
+
+
+                  {/* Loading lines */}
+
+                  <div className="w-full max-w-xs space-y-2 mt-8">
+
+                    <div className="h-1 rounded-full bg-zinc-800 overflow-hidden">
+                      <div className="h-full w-2/3 bg-zinc-500 animate-pulse" />
+                    </div>
+
+                    <div className="flex justify-between">
+
+                      <span className="font-ai text-[7px] tracking-widest text-zinc-700">
+                        CNN INFERENCE
+                      </span>
+
+                      <span className="font-ai text-[7px] tracking-widest text-zinc-700">
+                        ACTIVE
+                      </span>
+
+                    </div>
+
+                  </div>
+
+                </div>
+
+              )}
+
+
+              {/* 
+                  RESULT
+               */}
+
+              {result && (
+
+                <div className="space-y-7">
+
+                  {/* Prediction */}
+
+                  <div
+                    className={`relative overflow-hidden rounded-2xl border p-6
+                      ${
+                        isReal
+                          ? "bg-emerald-500/[0.04] border-emerald-500/20"
+                          : "bg-red-500/[0.04] border-red-500/20"
+                      }`}
+                  >
+
+                    {/* Background icon */}
+
+                    <div className="absolute -right-6 -bottom-6 opacity-[0.04]">
+
+                      {isReal ? (
+                        <CheckCircle2 className="w-40 h-40" />
+                      ) : (
+                        <AlertTriangle className="w-40 h-40" />
+                      )}
+
+                    </div>
+
+
+                    <div className="relative">
+
+                      <div className="flex items-center justify-between mb-5">
+
+                        <span className="font-ai text-[8px] tracking-[0.2em] text-zinc-600">
+                          CLASSIFICATION
+                        </span>
+
+                        {isReal ? (
+                          <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                        ) : (
+                          <AlertTriangle className="w-5 h-5 text-red-400" />
+                        )}
+
+                      </div>
+
+
+                      <p
+                        className={`font-ai text-2xl sm:text-3xl tracking-wide
+                          ${
+                            isReal
+                              ? "text-emerald-400"
+                              : "text-red-400"
+                          }`}
+                      >
                         {result.label}
                       </p>
+
+                      <p className="text-xs text-zinc-600 mt-2">
+                        Model classification
+                      </p>
+
                     </div>
+
                   </div>
+
+
+                  {/* Confidence */}
+
+                  <div>
+
+                    <div className="flex items-end justify-between mb-4">
+
+                      <div>
+
+                        <p className="font-ai text-[8px] tracking-[0.2em] text-zinc-600">
+                          CONFIDENCE
+                        </p>
+
+                        <p className="font-ai text-4xl text-zinc-100 mt-2">
+                          {confidence}
+                          <span className="text-lg text-zinc-600 ml-1">
+                            %
+                          </span>
+                        </p>
+
+                      </div>
+
+                      <ArrowUpRight className="w-4 h-4 text-zinc-700" />
+
+                    </div>
+
+
+                    <div className="h-2 bg-zinc-800 rounded-full overflow-hidden">
+
+                      <div
+                        className={`h-full rounded-full transition-all duration-1000
+                          ${
+                            isReal
+                              ? "bg-emerald-400"
+                              : "bg-red-400"
+                          }`}
+                        style={{
+                          width: `${result.confidence }%`,
+                        }}
+                      />
+
+                    </div>
+
+
+                    <div className="flex justify-between mt-2">
+
+                      <span className="text-[9px] text-zinc-700">
+                        0%
+                      </span>
+
+                      <span className="font-ai text-[7px] tracking-widest text-zinc-700">
+                        MODEL CERTAINTY
+                      </span>
+
+                      <span className="text-[9px] text-zinc-700">
+                        100%
+                      </span>
+
+                    </div>
+
+                  </div>
+
+
+                  {/* Technical info */}
+
+                  <div className="grid grid-cols-2 gap-3">
+
+                    <div className="rounded-xl border border-zinc-800 bg-zinc-950/40 p-4">
+
+                      <p className="font-ai text-[7px] tracking-widest text-zinc-700">
+                        ENGINE
+                      </p>
+
+                      <p className="text-xs text-zinc-300 mt-2">
+                        Modified CNN
+                      </p>
+
+                    </div>
+
+
+                    <div className="rounded-xl border border-zinc-800 bg-zinc-950/40 p-4">
+
+                      <p className="font-ai text-[7px] tracking-widest text-zinc-700">
+                        OUTPUT
+                      </p>
+
+                      <p className="text-xs text-zinc-300 mt-2">
+                        Binary Class
+                      </p>
+
+                    </div>
+
+                  </div>
+
+
+                  {/* Message */}
+
+                  {result.message && (
+
+                    <div className="border-t border-zinc-800 pt-5">
+
+                      <p className="text-xs text-zinc-500 leading-relaxed">
+                        {result.message}
+                      </p>
+
+                    </div>
+
+                  )}
+
                 </div>
 
-                <div>
-                  <div className="flex justify-between text-sm mb-2">
-                    <span className="text-zinc-400">Confidence</span>
-                    <span className="text-zinc-100 font-medium">
-                      {(result.confidence * 100).toFixed(1)}%
-                    </span>
-                  </div>
-                  <div className="w-full h-2 bg-zinc-800 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-700 ${
-                        result.label?.toLowerCase() === 'real' ? 'bg-emerald-500' : 'bg-red-500'
-                      }`}
-                      style={{ width: `${result.confidence * 100}%` }}
-                    />
-                  </div>
-                </div>
+              )}
 
-                {result.message && (
-                  <p className="text-xs text-zinc-500 leading-relaxed border-t border-zinc-800 pt-4">
-                    {result.message}
-                  </p>
-                )}
-              </div>
-            )}
+            </div>
+
           </div>
+
         </div>
+
       </div>
+
+
+      {/* 
+          FOOTER NOTE
+       */}
+
+      <div className="mt-8 flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
+
+        <div className="flex items-center gap-2">
+
+          <div className="w-1.5 h-1.5 rounded-full bg-zinc-600" />
+
+          <span className="text-[10px] text-zinc-600">
+            Results are probabilistic and may vary by image.
+          </span>
+
+        </div>
+
+        <span className="font-ai text-[7px] tracking-[0.2em] text-zinc-700">
+          Z-VISION / AI DETECTION
+        </span>
+
+      </div>
+
     </div>
   )
 }

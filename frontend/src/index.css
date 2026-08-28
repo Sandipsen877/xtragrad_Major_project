@@ -1,10 +1,33 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Audiowide&family=Poppins:wght@400;500;600;700&display=swap');
 
 @import "tailwindcss";
+
+@theme {
+  --font-ai: "Audiowide", sans-serif;
+  --font-body: "Poppins", sans-serif;
+}
 
 body {
   margin: 0;
-  font-family: Inter, system-ui, -apple-system, sans-serif;
+  font-family: "Poppins", sans-serif;
   background-color: #09090b; /* near black */
   color: #e4e4e7;            /* soft white/steel */
 }
+
+@keyframes tech-marquee {
+  from {
+    transform: translateX(-50%);
+  }
+
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-tech-marquee {
+  animation: tech-marquee 35s linear infinite;
+}
+
+
+
+
